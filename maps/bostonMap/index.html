@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+  <title>Basic geo (svg)</title>
+</head>
+
+<style>
+body {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+.map path {
+  fill: #ddd;
+  stroke: #aaa;
+}
+
+div.tooltip {   
+    position: absolute;         
+    text-align: center;         
+    width: 60px;                    
+    height: 28px;                   
+    padding: 2px;               
+    font: 12px sans-serif;      
+    background: lightsteelblue; 
+    border: 0px;        
+    border-radius: 8px;         
+    pointer-events: none;           
+}
+
+.station circle {
+    fill: #f00;
+}
+
+</style>
+
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
+
+  <script>
+
+var width = 800;
+var height = 600;
+var margin = {
+    "left":25,
+    "right":25,
+    "top": 50,
+    "bottom":50
+};
+var projection = d3.geoAlbers()
+  .scale(130000)
+  .rotate([71.057, 0])
+  .center([0, 42.313])
+  .translate([width/2,height/2]);
+
+var geoGenerator = d3.geoPath()
+  .projection(projection);
+
+function handleMouseover(d) {
+}
+
+function drawNeighborhoods(geojson) {
+    var div = d3.select("body").append("div")   
+    .attr("class", "tooltip")               
+    .style("opacity", 0);
+
+  var u = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("class", "map")
+    .selectAll('path')
+    .data(geojson["features"]);
+
+  u.enter()
+    .append('path')
+    .attr('d', geoGenerator)
+    .on("mouseover", function(d) {     
+            div.transition()        
+                .duration(200)      
+                .style("opacity", .9);      
+            div .html(d.properties.Name)  
+                .style("left", (d3.event.pageX) + "px")     
+                .style("top", (d3.event.pageY - 28) + "px");    
+            })                  
+    .on("mouseout", function(d) {       
+        div.transition()        
+            .duration(500)      
+            .style("opacity", 0);   
+    });
+}
+
+function drawStations(geojson){
+    d3.selectAll(".map").data(geojson["features"]).enter()
+    .append("circle")
+    .attr("class", "station")
+    .attr("d", geoGenerator);
+}
+
+d3.json('./Boston_Neighborhoods.geojson',function(data){
+    drawNeighborhoods(data);
+});
+
+d3.json('./All_Stations.geojson', function(data){
+    console.log(data["features"][0])
+    drawStations(data);
+});
+
+  </script>
+</body>
+</html>
