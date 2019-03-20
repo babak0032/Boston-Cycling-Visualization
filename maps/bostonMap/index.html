@@ -108,12 +108,15 @@ function drawBoth(geojson){
     .attr("width", width)
     .attr("height", height);
 
+console.log(geojson["features"]);
   svg.selectAll("path")
       .data(geojson["features"]).enter()
+      // .datum({type: "FeatureCollection", features: geojson["features"]})
+      // .enter()
       .append("path")
       .attr("class", "feature")
       .style("fill", "steelblue")
-      .attr("d", geoGenerator)
+      .attr("d", function(d) { return geoGenerator(d.geometry); })
       .on("mouseover", function(d) {     
             div.transition()        
                 .duration(200)      
@@ -152,7 +155,7 @@ function drawBoth(geojson){
 
 }
 
-d3.json("./allData.geojson", function(data){
+d3.json("./Neighborhoods.geojson", function(data){
   drawBoth(data);
 });
 
